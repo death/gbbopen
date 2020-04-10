@@ -957,27 +957,7 @@
   ;; fake such an interface by temporarily setting the REHASH-SIZE of the hash
   ;; table to (- `new-size' old-size).
   #+sbcl
-  (sb-ext:with-locked-hash-table (hash-table)
-    (when (> new-size (hash-table-size hash-table))
-      (let ((old-rehash-size (hash-table-rehash-size hash-table))
-            (old-size (length (sb-impl::hash-table-next-vector hash-table))))
-        ;; SBCL's compiler (starting ~1.0.35 and continuing through at least
-        ;; 1.0.54) has problems compiling the (setf slot-value) with the
-        ;; UNWIND-PROTECT.  This FLET addresses that:
-        (flet ((set-rehash-size (hash-table size)
-                 (setf (slot-value hash-table 'sb-impl::rehash-size) size)))
-          (unwind-protect
-              (progn (set-rehash-size
-                      hash-table 
-                      ;; Compute the incremental value (to be added back to
-                      ;; old-size in MAYBE-REHASH):
-                      (-& new-size old-size))
-                     ;; Calling REHASH directly causes problems, so we call
-                     ;; MAYBE-REHASH instead with 0 free KV's:
-                     (setf (sb-impl::hash-table-next-free-kv hash-table) 0)
-                     (sb-impl::maybe-rehash hash-table 't))
-            (set-rehash-size hash-table old-rehash-size))))
-      't))
+  't
   #+scl
   (flet ((%resize ()
 	   (when (> new-size (hash-table-size hash-table))
