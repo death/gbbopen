@@ -63,7 +63,11 @@
 ;;; ===========================================================================
 ;;; Add a single feature to identify sufficiently new Digitool MCL
 ;;; implementations (both Digitool MCL and pre-1.2 Clozure CL include the
-;;; feature mcl):
+;;; feature mcl)
+;;;
+;;; FIXME: Adding these features may fool non-GBBopen software into
+;;; thinking that it runs on these implementations.  The features
+;;; should likely be prefixed with :GBBOPEN- to avoid such deception.
 
 #+(and digitool ccl-5.1)
 (pushnew :digitool-mcl *features*)
