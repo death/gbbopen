@@ -294,15 +294,16 @@
 ;;; ---------------------------------------------------------------------------
 
 (defun sorted/filtered-extended-repl-commands ()
-  (sort (remove-if
-         #'(lambda (command-spec)
-             (destructuring-bind (command function doc help-control
-                                  cl-user-fn-name system-name)
-                 command-spec
-               (declare (ignore command function doc 
-                                cl-user-fn-name system-name))
-               (eq help-control ':no-help)))
-         *extended-repl-commands*)
+  (sort (copy-list
+         (remove-if
+          #'(lambda (command-spec)
+              (destructuring-bind (command function doc help-control
+                                   cl-user-fn-name system-name)
+                  command-spec
+                (declare (ignore command function doc
+                                 cl-user-fn-name system-name))
+                (eq help-control ':no-help)))
+          *extended-repl-commands*))
         #'string<
         :key #'first))
 
