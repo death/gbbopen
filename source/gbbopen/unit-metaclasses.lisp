@@ -520,7 +520,25 @@
         (*%%inherited-link-slot%%* nil))
     (when (typep most-specific-direct-slot-definition 'direct-link-definition)
       (setf *%%inherited-link-slot%%* most-specific-direct-slot-definition))
-    (call-next-method)))
+    (let ((eslotd (call-next-method))
+          (old-eslotd (and (class-finalized-p class)
+                           (find slot-name
+                                 (class-slots class)
+                                 :key #'slot-definition-name))))
+      ;; It's important to migrate information from an old eslotd, if
+      ;; available, to the new one just created.
+      (when (and old-eslotd
+                 (typep old-eslotd 'gbbopen-effective-slot-definition)
+                 (typep eslotd 'gbbopen-effective-slot-definition))
+        (setf (slot-value eslotd 'evfn-blks)
+              (slot-value old-eslotd 'evfn-blks))
+        (dolist (entry (slot-value eslotd 'evfn-blks))
+          (let ((evfn-blk (cdr entry)))
+            (setf (slot-value evfn-blk 'slot-or-space-qualifier)
+                  eslotd)))
+        (setf (slot-value eslotd 'source-for-dimensions)
+              (slot-value old-eslotd 'source-for-dimensions)))
+      eslotd)))
 
 ;;; ---------------------------------------------------------------------------
 
