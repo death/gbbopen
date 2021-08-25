@@ -1927,19 +1927,18 @@
     (values-list result))
   #+lispworks
   (mp:read-special-in-process thread symbol)
-  ;; Can't get SB-THREAD:SYMBOL-VALUE-IN-THREAD to work correctly, so:
   #+(and sbcl sb-thread)
-  (let ((result nil))
-    (sb-thread:interrupt-thread
-     thread
-     #'(lambda ()
-         (setf result
-               (if (boundp symbol)
-                   `(,(symbol-value symbol) t)
-                   '(nil nil)))))
-    ;; Wait for result:
-    (loop until result do (sleep 0.05))
-    (values-list result))
+  (multiple-value-bind (value boundp)
+      (sb-thread:symbol-value-in-thread symbol thread nil)
+    (case boundp
+      ((nil)
+       (handler-case
+           (values (symbol-value symbol) t)
+         (error (condition)
+           (declare (ignore condition))
+           (values nil nil))))
+      (t
+       (values value t))))
   #+scl
   (multiple-value-bind (value boundp)
       (kernel:thread-symbol-dynamic-value thread symbol)
