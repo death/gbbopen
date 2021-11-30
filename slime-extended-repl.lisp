@@ -124,7 +124,7 @@
     (loop
       (issue-prompt)
       (let ((line (handler-case (read-line)
-                    (end-of-repl-input () (return)))))
+                    (swank::end-of-repl-input () (return)))))
         (when (plusp (length line))
           (unless (repl-command-form line)
             (setf buffer (concatenate 'simple-string
