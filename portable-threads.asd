@@ -57,7 +57,9 @@
 		     (:module
 		      "test"
 		      :components
-		      ((:static-file "portable-threads-test.lisp")))))))))
+		      ((:static-file "portable-threads-test.lisp")))
+                     (:file "scheduled-periodic-functions"
+                      :depends-on ("portable-threads"))))))))
 
 ;;; ---------------------------------------------------------------------------
 
