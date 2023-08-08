@@ -217,16 +217,21 @@
 ;;; ===========================================================================
 ;;;  Implementation-Specific Package & Feature Adjustments
 
+(defun add-nicknames (package-designator nicknames)
+  (check-type nicknames list)
+  (let ((package (find-package package-designator)))
+    (rename-package package
+                    (package-name package)
+                    (union (package-nicknames package)
+                           nicknames
+                           :test #'equal))))
+
 ;; Allow use of CMUCL package nicknames with SBCL:
 #+sbcl
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (let ((fn (or
-              ;; Pre SBCL-1.0.34:
-              (find-symbol "ENTER-NEW-NICKNAMES" :sb-impl)
-              ;; Post SBCL-1.0.34:
-              (find-symbol "%ENTER-NEW-NICKNAMES" :sb-impl))))
-    (funcall fn (find-package "SB-PCL") '("PCL"))
-    (funcall fn (find-package "SB-UNIX") '("UNIX"))))
+  (sb-ext:without-package-locks
+    (add-nicknames "SB-PCL" '("PCL"))
+    (add-nicknames "SB-UNIX" '("UNIX"))))
 
 ;;; ===========================================================================
 ;;;  Export user-level Module Manager names.  (Some of these names could
